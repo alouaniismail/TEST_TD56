@@ -1,0 +1,140 @@
+Resume:
+Reprenons depuis le TD4:(Substitution d'objets)
+Car on doit faire les choses correctement:>>
+TD0: comparaison C/JAVA en terme de code à maintenir.
+TD1: ecriture de tests/decouverte de l'environnement.
+TD2: implémentation des différents .java + Makefile + execution partagee.
+TD3: alléger le code et l'améliorer
+TD4: masquer les infos inutiles au client(creation de abstract et interface)
+TD5: ajout de nouveaux caracteres
+Reprenons depuis le TD5:
+les simple(makefile!!) dans src, ainsi que les 2 repertoires abstract et interface seulement dans le depot..
+Ou bien reprenons depuis le TD6 (pas le td5 (deja fait)):
+TD6: Lien est-UN ou a-UN.
+>
+Travaillons le tD6 apres mise en place d'un bon environnement de developpement (ce qui est dit avant)..
+1. A partir de part4, on dispose de 2 folders:
+src et tst.
+=>src contient les passagers indecis et stresses a partir d'un heritage (lien est-un) de passagerabstrait de meme pour passagerstandard.
+=>tst contient les test de passager en abstrait et puis les 3 classes de tests.(il faut réarranger cela)
+((oublions a cemoment : abstarct et interface))
+Pour emacs TestPassagerStandard.java & :
+->Les 2 differences sont testInteractionMontee et testInteractionArret.
+Le passager standard demande une place assise sinon debout sinon il entre pas.
+=>ETAT DU BUS?(combien de probabilitées)
+=>=>
+*des places assises et debout.
+*pas de place assise.
+*aucune place(bus plein).
+donc le bus peut donner le choix ou restreindre qu'a des place debout (generalement pas d'assises) ou aucune place carrement...
+On initialise le faux de type FauxVehicule avec:
+FauxVehicule faux= new FauxVehicule(FauxVehicule.VIDE); l'argument est static de type final byte VIDE=0 qui permet de faire status=0 soit instancier un faux vehicule avec le status VIDE.
+si status=VIDE||ASSIS ; cela donnerait un faux vehicule vide ou un faux vehicule avec status assis soit existe placeassises(en coordination avec les verificateurs dans cette classe) si status=Debout cad. existe placedebout uniquement
+=>cela donnerait 3 configurations possibles:
+VIDE(2 choix)
+debout(assis s'envole)
+pas de choix(PLEIN(de type final byte(status))).
+Puis on demarre les tests:
+p.monterDans(faux) avec status=VIDE
+donc ca va appeler monteeDemanderAssis car choix possibles
+donc ce string c'est le getLastLog(faux) vu le logs.add(string) dans la classe.
+status=Debout(pas de places assises(existe places debout))
+donc p.monterDans(faux) va appeler monteeDemanderDebout 
+puis reste la derniere chose a controler c'est lorsque le bus est PLEIN là, on appele rien:
+assert 0==faux.logs.size() : "pas de place".
+->Interaction a l'arret:
+Le passager Standard a 2 cas destination >= numeroArret ou destination < numeroArret.
+On initialise un vehicule faux (nom variable) avec un status == VIDE.
+La destination du passager est 5.
+p.nouvelArret(faux,1);
+n'appele rien car pas arrivee a destination;le numeroArret est 1 actuellement.
+=>donne:
+assert 0==faux.logs.size():"pas a destination".
+puis p.nouvelArret(faux,5) donne:
+assert "arretDemanderSortie" == getLastLog(faux) : "destination";
+INDECIS:
+a la montee: demande une place debout ou reste dehors.
+FauxVehicule.VIDE comme status donnerait un appel a monteeDemanderDebout
+car 2 cas:
+-existe places debout.
+-existe pas.
+existe pas(2ieme possiblitee(*)):
+FauxVehicule.Assis;
+(existe que des places assises non vide)
+assert 0== faux.logs.size() : "pas de place";
+apres p.monteeDans(faux);
+->Tests des interactions a la sortie:
+>>testInteractionArret():
+si destination>numeroArret:
+L'indecis change de position a chaque arret.
+Si le status est VIDE, il peut changer 
+Si le status est Assis(que des places assises), il peut pas changer si assis
+Si le status est Debout(que des places debouts), il peut pas changer si debout
+Donc soit le bus il a un status VIDE(des places assises et debout) soit un status ASSIS(que des places assises) soit un status Debout(que des places debouts).
+Si le status est VIDE:
+On fait une instanciation des deux
+puis on choisit que p soit assis soit: p.changerEnAssis()
+puis on avance p.nouvelArret(faux,1)
+puis on fait la verification:
+assert "arretDemanderDebout" == getLastLog(faux) : "assis vers debout"
+sinon on fait p.changerEnDebout(), on ré-appelle le même truc, ca donne
+debout vers assis.
+(car il existe des places assises et debouts)
+Sinon le fauxvehicule a un status ASSIS, dans ce cas:
+p.changerEnAssis();
+faux=new FauxVehicule(FauxVehicule.ASSIS);
+p.nouvelArret(faux,1) donnera rien: car pas de places debouts dispos:
+"assis vers debout impossible"
+symetriquement avec l'autre sous cas.
+Puis reste le cas de la destination est egal au numero Arret appel de arretDemanderSortie.
+=>Passons au Stresse maintenant::
+>>>>
+****:
+3 cas a la montee:
+des choix avec VIDE => appel a monteeDemanderAssis.
+pas de place assise (s'envole la 1ere ifthenelseif..) => pas de place assise
+mais appel a monteeDemanderDebout selon son type de caractere.
+sinon aucune(status=PLEIN): faux.logs.size()==0:"pas de place dispo".
+A LA DESCENTE:
+on change en debout
+on fait: p.nouvelArret(faux,1) cela donne rien
+apres si a partir du 4ieme arret (desination==7), soit:
+p.nouvelArret(faux,4) ; on fera:
+assert "arretDemanderDebout" sur un status VIDE.
+sinon on change pas en assis mais en debout puis a la destination:
+arretDemanderSortie.
+VOILA.
+make recette=>fait passer tous les tests.
+make Simple/executer[]
+make test_all_exec dans src.
+(java -cp *.class//)//////.//
+Voilà, c'est tout.
+=>folder origin mis en place.
+===========================================================================
+*PASSONS A abstract:
+abstract c'est tout simplement:
+jouer sur les portees des methodes pour les rendre inaccessibles au client(au niveau de PassagerAbstrait, la methode monterDans va etre seul de portee publique car le client en a besoin), au niveau des simple(s), on va importer: 
+tec.PassagerStandard
+tec.Transport et tec.Autobus (pour instancier(pas d'acces implemente une classe abstraite)+acces client seulement utilisable a 100%)).
+tec.Usager
+pas de tec.Passager !!(Passager.java est une classe abstraite).
+Voila.
+Interface:
+----------
+Ne pas importer les packages qui deviennent des interfaces (possiblitee d'acces) et rendre publiques les methodes des classes abstraites (cas de PassagerAbstrait) et importer au total: Usager, Transport, et tec.FabriqueTec pour faire l'instanciation(pas besoin des origins sinon acces=>FabriqueTec utilitee --class.).
+Voila tout.
+DANS ABSTRACT/tst:
+une instance de passager elle ..
+FauxVehicule elle extends Vehicule implements Transport
+FauxPassager extends Passager implements Usager.
+(rappels: Transport.java et Usager.java sont des interfaces)
+src/ est bon.
+monterDans((Transport)(faux));
+faux2/faux dans getLastLog et logs.size().
+corriger les fautes de Stresse passager.//
+VOILA, c'est tout.
+=>Tout est rearrangee.
+niveau2: simpleAll avec fabriqueTec pour interface/ et les bons arguments.
+(et les minimaux imports)
+avec pas de modifs a apporter par rapport a ../abstract/tst.
+>VOILA.
